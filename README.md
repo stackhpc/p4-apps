@@ -1,13 +1,11 @@
 P3 Appliances
 =============
 
+WIP: terraform version of p3-appliances. MOST OF THIS WILL BE OUT OF DATE UNLESS MARKED *UPDATED*.
+
 A repo of tools for creating software-defined platforms for the ALaSKA P3 project.
 
-This repo is split into two parts: 
 
-- An Ansible Galaxy role, stackhpc.cluster-infra, which contains
-  OpenStack Heat templates for creating bare metal instances configured
-  for execution framework clusters.
 - Ansible playbooks (including Galaxy roles) for integrating with OpenStack services, and creating 
   software middleware platforms on top of OpenStack infrastructure.
 
@@ -52,7 +50,17 @@ inventory:
 
 The following examples use the production inventory.
 
-### Creating Infrastructure Using the Heat Templates
+### Creating Infrastructure Using Terraform
+
+*UPDATED*:
+
+```
+cd tf_ohpc
+terraform init
+terraform apply
+```
+
+--- Not updated below here ---
 
 The Heat templates and stackhpc.cluster-infra role are configured locally
 through YAML environment files, then invoked through the

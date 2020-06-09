@@ -1,11 +1,15 @@
 ---
+
+# Name of Openstack cloud in clouds.yaml to use
+cloud: "alaska"
+
 # This name is used for the Heat stack and as a prefix for the
 # cluster node hostnames.
-cluster_name: openhpc
+cluster_name: p4
 
 # This parameter should be set to the name of an RSA keypair you have
 # uplaoded to OpenStack.
-cluster_keypair: wendy
+cluster_keypair: id-rsa-alaska
 
 # Site-specific network configuration.
 cluster_net:
@@ -27,7 +31,7 @@ cluster_groups:
   - "{{ slurm_compute }}"
 
 # Login node configuration.
-slurm_login_flavor: "compute-B"
+slurm_login_flavor: "general.v1.medium" # VM
 slurm_login_image: "CentOS7.8-OpenHPC"
 slurm_login_num_nodes: 1
 
@@ -41,7 +45,7 @@ slurm_login:
 # Compute node configuration.
 slurm_compute_flavor: "compute-A"
 slurm_compute_image: "CentOS7.8-OpenHPC"
-slurm_compute_num_nodes: 16
+slurm_compute_num_nodes: 2
 
 slurm_compute:
   name: "compute"
@@ -88,8 +92,8 @@ cluster_roles:
 openhpc_slurm_partitions: 
   - "{{ slurm_compute }}"
 
-# Choose between glusterfs, beegfs and none.
-cluster_fs: beegfs
+# Choose between glusterfs, beegfs, nfs and none.
+cluster_fs: nfs
 
 # Gluster server config
 gluster_cluster_volume_name: "{{ cluster_name }}"
