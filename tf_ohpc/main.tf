@@ -61,9 +61,9 @@ resource "openstack_compute_instance_v2" "compute" {
   network {
     name = local.config.cluster_net[1].net
   }
-  #network {     # TODO: enable IB
-  #   name = local.config.cluster_net[2].net
-  # }
+  network {
+     name = local.config.cluster_net[2].net
+  }
   metadata = {
     "terraform directory" = local.tf_dir
   }
@@ -71,6 +71,7 @@ resource "openstack_compute_instance_v2" "compute" {
 
 # TODO: needs fixing to match `cluster_roles`:
 # TODO: probably needs fixing for multiple control/login nodes
+# TODO: needs fixing for case where creation partially fails resulting in "compute.network is empty list of object"
 data "template_file" "inventory" {
   template = "${file("${path.module}/inventory.tpl")}"
   vars = {
