@@ -148,7 +148,7 @@ md0:
   devices:
     - '/dev/sdb'
     - '/dev/sdc'
-    - '/dev/sdd'
+    # - '/dev/sdd' this has failed on one of the nodes so ignore it!
   # Define filesystem to partition array with
   filesystem: 'xfs'
   filesystem_opts: ''
