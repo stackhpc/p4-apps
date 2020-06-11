@@ -52,15 +52,15 @@ resource "openstack_compute_instance_v2" "compute" {
   flavor_name = var.config.slurm_compute_flavor
   key_pair = var.config.cluster_keypair
   config_drive = var.config.cluster_config_drive
-  network {
-    name = var.config.cluster_net[0].net  # TODO: there must be a neater way of doing this??
+
+  dynamic "network" {
+    for_each = var.config.cluster_net
+
+    content {
+      name = network.value["net"]
+    }
   }
-  network {
-    name = var.config.cluster_net[1].net
-  }
-  network {
-     name = var.config.cluster_net[2].net
-  }
+
   metadata = {
     "terraform directory" = local.tf_dir
   }
