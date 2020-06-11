@@ -21,24 +21,17 @@ locals {
 variable config {
 }
 
-# TODO: separate out control/login?
-resource "openstack_compute_instance_v2" "control" {
+resource "openstack_compute_instance_v2" "login" {
 
   count = var.config.slurm_login_num_nodes
 
-  name = "${var.config.cluster_name}-control-${count.index}"
+  name = "${var.config.cluster_name}-login-${count.index}"
   image_name = var.config.slurm_login_image
   flavor_name = var.config.slurm_login_flavor
   key_pair = var.config.cluster_keypair
-  network {
-    name = var.config.cluster_net[0].net  # TODO: there must be a neater way of doing this??
+  network { # NB we only provide 1x network here
+    name = var.config.cluster_net[0].net
   }
-  # network {
-  #   name = var.config.cluster_net[1].net
-  # }
-  # network {     # TODO: enable IB
-  #   name = var.config.cluster_net[2].net
-  # }
   metadata = {
     "terraform directory" = local.tf_dir
   }
@@ -73,13 +66,13 @@ resource "local_file" "hosts" {
   content  = templatefile("${path.module}/inventory.tpl",
                           {
                             "config":var.config,
-                            "controls":openstack_compute_instance_v2.control,
+                            "logins":openstack_compute_instance_v2.login,
                             "computes":openstack_compute_instance_v2.compute,
                           },
                           )
   filename = "${path.cwd}/inventory"
 }
 
-output "control_ip_addr" {
-  value = openstack_compute_instance_v2.control[0].network[0].fixed_ip_v4
+output "login_ip_addr" {
+  value = openstack_compute_instance_v2.login[0].network[0].fixed_ip_v4
 }
