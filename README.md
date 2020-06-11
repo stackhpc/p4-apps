@@ -52,24 +52,9 @@ The following examples use the production inventory.
 
 ### Creating Infrastructure Using Terraform
 
-*UPDATED*:
+**UPDATED:**
 
-This is actually driven by ansible (so that we can use the ansible-format config file), so:
-
-```
-cd <repo root>
-terraform init
-ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml ansible/cluster-infra.yml
-```
-
-(except I've removed secrets temporarily so actually no vault password is required)
-NB: No inventory is required.
-
---- Not updated below here ---
-
-The Heat templates and stackhpc.cluster-infra role are configured locally
-through YAML environment files, then invoked through the
-`cluster-infra.yml` playbook.
+Both terraform and ansible are configured configured locally through YAML environment files, then invoked through the `cluster-infra.yml` playbook which drives terraform.
 
 Some example YAML template configurations are available in the `config/`
 subdirectory.  To use these, some default parameters should first be
@@ -83,7 +68,10 @@ modified:
 
 Infrastructure invocation then takes the form (for example): 
 
-    ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml -i ansible/inventory ansible/cluster-infra.yml
+    ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml ansible/cluster-infra.yml
+
+**NB:** No inventory is required here.
+**NB:** Currently secrets are disabled (for testing) so no vault password/arguments are required.
 
 Once the infrastructure playbook has run to completion, an inventory
 for the newly-created nodes will have been generated in the `ansible/`
@@ -91,7 +79,9 @@ subdirectory.  This inventory is suffixed with the value set in
 `cluster_name`.  The cluster software can be deployed and configured
 using another playbook (for example):
 
-    ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml -i ansible/inventory-openhpc ansible/cluster-infra-configure.yml
+    ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml -i ansible/inventory-p4 ansible/cluster-infra-configure.yml
+
+**END UPDATE**
 
 ### Deploying and configuring Swarm SIP
 

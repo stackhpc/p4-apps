@@ -70,7 +70,7 @@ resource "local_file" "hosts" {
                             "computes":openstack_compute_instance_v2.compute,
                           },
                           )
-  filename = "${path.cwd}/inventory"
+  filename = "${path.module}/../ansible/inventory-${var.config.cluster_name}" # NB working dir is project_path in ansible
 }
 
 output "login_ip_addr" {
