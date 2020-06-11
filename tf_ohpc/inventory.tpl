@@ -3,18 +3,17 @@ ansible_user=${config.slurm_login.user}
 ssh_proxy=${logins[0].network[0].fixed_ip_v4}
 ansible_ssh_common_args='-C -o ControlMaster=auto -o ControlPersist=60s -o ProxyCommand="ssh ${config.slurm_login.user}@${logins[0].network[0].fixed_ip_v4} -W %h:%p"'
 
-[slurm_control]
-%{ for login in logins}${login.name} ansible_host=${login.network[0].fixed_ip_v4}
+[${config.cluster_name}_login]
+%{ for login in logins}${login.name} ansible_host=${login.network[0].fixed_ip_v4~}
 %{ endfor }
 
-[slurm_login]
-%{ for login in logins}${login.name} ansible_host=${login.network[0].fixed_ip_v4}
+[${config.cluster_name}_compute]
+%{ for compute in computes}${compute.name} ansible_host=${compute.network[0].fixed_ip_v4~}
 %{ endfor }
 
-[slurm_compute]
-%{ for compute in computes}${compute.name} ansible_host=${compute.network[0].fixed_ip_v4}
+%{ for role in config.cluster_roles ~}
+[cluster_${role.name}:children]
+%{ for group in role.groups ~}
+${config.cluster_name}_${group.name}
 %{ endfor }
-
-
-[${config.cluster_name}_${config.slurm_compute.name}:children]
-slurm_compute
+%{ endfor }
