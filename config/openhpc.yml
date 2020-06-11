@@ -87,6 +87,10 @@ cluster_roles:
     groups:
     - "{{ slurm_login }}"
     - "{{ slurm_compute }}" 
+  - name: "nfs_server"
+    groups: [ "{{ slurm_login }}" ]
+  - name: "nfs_client"
+    groups: [ "{{ slurm_compute }}" ]
 
 # Define a list of SLURM partitions to create.
 openhpc_slurm_partitions: 
@@ -153,6 +157,10 @@ md0:
   level: '0'
   # Define if array should be present or absent
   state: 'present'
+
+# NFS config:
+nfs_export: "/mnt/nfs"
+nfs_client_mnt_point: "/mnt/nfs"
 
 mdadm_arrays:
   - "{{ md0 }}"

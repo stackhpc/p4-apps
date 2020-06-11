@@ -18,4 +18,5 @@
   version: actions
   name: stackhpc.openhpc
 - src: stackhpc.os-config
+- src: stackhpc.nfs
 ...
