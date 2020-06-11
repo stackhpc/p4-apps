@@ -72,26 +72,14 @@ resource "openstack_compute_instance_v2" "compute" {
 # TODO: needs fixing to match `cluster_roles`:
 # TODO: probably needs fixing for multiple control/login nodes
 # TODO: needs fixing for case where creation partially fails resulting in "compute.network is empty list of object"
-data "template_file" "inventory" {
-  template = "${file("${path.module}/inventory.tpl")}"
-  vars = {
-      ssh_user_name = local.config.slurm_login.user
-      proxy_ip = openstack_compute_instance_v2.control[0].network[0].fixed_ip_v4
-      control = <<EOT
-${openstack_compute_instance_v2.control[0].name} ansible_host=${openstack_compute_instance_v2.control[0].network[0].fixed_ip_v4}
-EOT
-      computes = <<EOT
-%{ for compute in openstack_compute_instance_v2.compute}${compute.name} ansible_host=${compute.network[0].fixed_ip_v4}
-%{ endfor }
-EOT
-      instance_prefix = local.config.cluster_name # TODO: change instance_prefix for cluster_name
-      partition_name = local.config.slurm_compute.name # TODO: fix for multiple partitions, fix for indirection via "{{ openhpc_slurm_partitions }}" which tf doesn't understand
-  }
-  depends_on = [openstack_compute_instance_v2.control, openstack_compute_instance_v2.compute]
-}
-
 resource "local_file" "hosts" {
-  content  = data.template_file.inventory.rendered
+  content  = templatefile("${path.module}/inventory.tpl",
+                          {
+                            "config":local.config,
+                            "controls":openstack_compute_instance_v2.control,
+                            "computes":openstack_compute_instance_v2.compute
+                          },
+                          )
   filename = "${path.cwd}/inventory"
 }
 

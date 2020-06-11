@@ -1,16 +1,20 @@
 [all:vars]
-ansible_user=${ssh_user_name}
-ssh_proxy=${proxy_ip}
-ansible_ssh_common_args='-C -o ControlMaster=auto -o ControlPersist=60s -o ProxyCommand="ssh ${ssh_user_name}@${proxy_ip} -W %h:%p"'
+ansible_user=${config.slurm_login.user}
+ssh_proxy=${controls[0].network[0].fixed_ip_v4}
+ansible_ssh_common_args='-C -o ControlMaster=auto -o ControlPersist=60s -o ProxyCommand="ssh ${config.slurm_login.user}@${controls[0].network[0].fixed_ip_v4} -W %h:%p"'
 
 [slurm_control]
-${control}
+%{ for control in controls}${control.name} ansible_host=${control.network[0].fixed_ip_v4}
+%{ endfor }
 
 [slurm_login]
-${control}
+%{ for control in controls}${control.name} ansible_host=${control.network[0].fixed_ip_v4}
+%{ endfor }
 
 [slurm_compute]
-${computes}
+%{ for compute in computes}${compute.name} ansible_host=${compute.network[0].fixed_ip_v4}
+%{ endfor }
 
-[${instance_prefix}_${partition_name}:children]
+
+[${config.cluster_name}_${config.slurm_compute.name}:children]
 slurm_compute
