@@ -3,8 +3,6 @@
 - src: mrlesmithjr.mdadm
 - src: oasis_roles.kdump
 - src: singleplatform-eng.users
-- src: stackhpc.cluster-infra
-  version: v20.2.0
 - src: stackhpc.os-container-infra
   version: v20.0.0
 - src: stackhpc.os-manila-mount
@@ -16,7 +14,8 @@
 - src: stackhpc.monasca-rsyslog
 - src: stackhpc.grafana-conf
 - src: stackhpc.gluster-cluster
-- src: stackhpc.openhpc
-  version: v0.5.0
+- src: https://github.com/stackhpc/ansible-role-openhpc
+  version: actions
+  name: stackhpc.openhpc
 - src: stackhpc.os-config
 ...
