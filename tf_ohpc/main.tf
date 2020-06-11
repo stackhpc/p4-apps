@@ -5,14 +5,8 @@ terraform {
 # https://www.terraform.io/docs/providers/openstack/index.html
 # uses clouds.yml
 provider "openstack" {
-  cloud = local.config.cloud
+  cloud = var.config.cloud
   version = "~> 1.25"
-}
-provider "local" {
-  version = "~> 1.4"
-}
-provider "template" {
-  version = "~> 2.1"
 }
 
 data "external" "tf_control_hostname" {
@@ -20,27 +14,30 @@ data "external" "tf_control_hostname" {
 }
 
 locals {
-  config = yamldecode(file("../config/openhpc.yml"))
+  # config = "${data.external.ansible_config.result}"
   tf_dir = "${data.external.tf_control_hostname.result.hostname}:${path.cwd}"
+}
+
+variable config {
 }
 
 # TODO: separate out control/login?
 resource "openstack_compute_instance_v2" "control" {
 
-  count = local.config.slurm_login_num_nodes
+  count = var.config.slurm_login_num_nodes
 
-  name = "${local.config.cluster_name}-control-${count.index}"
-  image_name = local.config.slurm_login_image
-  flavor_name = local.config.slurm_login_flavor
-  key_pair = local.config.cluster_keypair
+  name = "${var.config.cluster_name}-control-${count.index}"
+  image_name = var.config.slurm_login_image
+  flavor_name = var.config.slurm_login_flavor
+  key_pair = var.config.cluster_keypair
   network {
-    name = local.config.cluster_net[0].net  # TODO: there must be a neater way of doing this??
+    name = var.config.cluster_net[0].net  # TODO: there must be a neater way of doing this??
   }
   # network {
-  #   name = local.config.cluster_net[1].net
+  #   name = var.config.cluster_net[1].net
   # }
   # network {     # TODO: enable IB
-  #   name = local.config.cluster_net[2].net
+  #   name = var.config.cluster_net[2].net
   # }
   metadata = {
     "terraform directory" = local.tf_dir
@@ -48,21 +45,21 @@ resource "openstack_compute_instance_v2" "control" {
 }
 
 resource "openstack_compute_instance_v2" "compute" {
-  count = local.config.slurm_compute_num_nodes
+  count = var.config.slurm_compute_num_nodes
 
-  name = "${local.config.cluster_name}-compute-${count.index}"
-  image_name = local.config.slurm_compute_image
-  flavor_name = local.config.slurm_compute_flavor
-  key_pair = local.config.cluster_keypair
-  config_drive = local.config.cluster_config_drive
+  name = "${var.config.cluster_name}-compute-${count.index}"
+  image_name = var.config.slurm_compute_image
+  flavor_name = var.config.slurm_compute_flavor
+  key_pair = var.config.cluster_keypair
+  config_drive = var.config.cluster_config_drive
   network {
-    name = local.config.cluster_net[0].net  # TODO: there must be a neater way of doing this??
+    name = var.config.cluster_net[0].net  # TODO: there must be a neater way of doing this??
   }
   network {
-    name = local.config.cluster_net[1].net
+    name = var.config.cluster_net[1].net
   }
   network {
-     name = local.config.cluster_net[2].net
+     name = var.config.cluster_net[2].net
   }
   metadata = {
     "terraform directory" = local.tf_dir
@@ -75,9 +72,9 @@ resource "openstack_compute_instance_v2" "compute" {
 resource "local_file" "hosts" {
   content  = templatefile("${path.module}/inventory.tpl",
                           {
-                            "config":local.config,
+                            "config":var.config,
                             "controls":openstack_compute_instance_v2.control,
-                            "computes":openstack_compute_instance_v2.compute
+                            "computes":openstack_compute_instance_v2.compute,
                           },
                           )
   filename = "${path.cwd}/inventory"
