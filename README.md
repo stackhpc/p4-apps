@@ -54,11 +54,16 @@ The following examples use the production inventory.
 
 *UPDATED*:
 
+This is actually driven by ansible (so that we can use the ansible-format config file), so:
+
 ```
-cd tf_ohpc
+cd <repo root>
 terraform init
-terraform apply
+ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml ansible/cluster-infra.yml
 ```
+
+(except I've removed secrets temporarily so actually no vault password is required)
+NB: No inventory is required.
 
 --- Not updated below here ---
 
