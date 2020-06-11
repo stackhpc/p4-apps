@@ -11,7 +11,7 @@
       nfs_enable:
         server: "{{ inventory_hostname in groups['cluster_nfs_server'] | first }}"
         clients: "{{ inventory_hostname in groups['cluster_nfs_client'] }}"
-      nfs_server: "{{ groups['cluster_nfs_server'] | first }}"
+      nfs_server: "{{ hostvars[groups['cluster_nfs_server'] | first ]['server_networks'][ext_name][0] }}" # TODO: make interface configurable?
       # other vars defined directly in the config:
       # nfs_export:
       # nfs_client_mnt_point:
