@@ -3,6 +3,10 @@ ansible_user=${config.slurm_login.user}
 ssh_proxy=${logins[0].network[0].fixed_ip_v4}
 ansible_ssh_common_args='-C -o ControlMaster=auto -o ControlPersist=60s -o ProxyCommand="ssh ${config.slurm_login.user}@${logins[0].network[0].fixed_ip_v4} -W %h:%p"'
 
+[cluster:children]
+%{ for group in config.cluster_groups }${ config.cluster_name }_${ group.name }
+%{ endfor ~}
+
 [${config.cluster_name}_login]
 %{ for login in logins}${login.name} ansible_host=${login.network[0].fixed_ip_v4} server_networks='${jsonencode({for net in login.network: net.name => [ net.fixed_ip_v4 ] })}'
 %{ endfor ~}
