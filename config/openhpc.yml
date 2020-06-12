@@ -161,10 +161,7 @@ md0:
 mdadm_arrays:
   - "{{ md0 }}"
 
-# NFS config:
-# NB: This uses the ext_name (="ilab") interface of the first login node as the nfs server address
-nfs_export: "/mnt/nfs"
-nfs_client_mnt_point: "{{ alaska_homedir }}"
+# NFS config: none required/permitted
 
 # A list of OpenHPC runtime libraries to install on compute and control nodes
 openhpc_packages:

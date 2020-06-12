@@ -1,5 +1,7 @@
 ---
-- name: Deploy nfs
+# This uses nfs to export {{ alaska_homedir }} from the first login node to the compute nodes via the {{ ext_name }} network.
+
+  - name: Deploy nfs
   hosts:
   - cluster_nfs_server
   - cluster_nfs_client
@@ -12,6 +14,5 @@
         server: "{{ inventory_hostname in groups['cluster_nfs_server'] | first }}"
         clients: "{{ inventory_hostname in groups['cluster_nfs_client'] }}"
       nfs_server: "{{ hostvars[groups['cluster_nfs_server'] | first ]['server_networks'][ext_name][0] }}" # TODO: make interface configurable?
-      # other vars defined directly in the config:
-      # nfs_export:
-      # nfs_client_mnt_point:
+      nfs_export: "{{ alaska_homedir }}"
+      nfs_client_mnt_point: "{{ alaska_homedir }}"
