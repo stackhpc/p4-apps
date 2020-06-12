@@ -1,6 +1,9 @@
 - hosts: cluster
-  vars:
-    ib_ipaddr: "{{ hostvars[inventory_hostname]['server_networks'][lln_name][0] | default(omit) }}"
-  roles:
-  - configure_ib
   become: yes
+  tasks:
+  - include_role:
+      name: configure_ib
+    vars:
+      ib_ipaddr: "{{ hostvars[inventory_hostname]['server_networks'][lln_name][0] | default(omit) }}"
+    when: "lln_name in hostvars[inventory_hostname]['server_networks']"
+    
