@@ -68,9 +68,8 @@ modified:
 
 Infrastructure invocation then takes the form (for example): 
 
-    ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml ansible/cluster-infra.yml
+    ansible-playbook -i localinventory --vault-password-file vault-password -e @config/openhpc.yml ansible/cluster-infra.yml
 
-**NB:** No inventory is required here.
 **NB:** Currently secrets are disabled (for testing) so no vault password/arguments are required.
 
 Once the infrastructure playbook has run to completion, an inventory
@@ -165,3 +164,16 @@ To setup hyperconverged storage and mount storage on OpenHPC node:
 To configure monitoring of the Ceph cluster
 
 ansible-playbook --vault-password-file vault.pass -i ansible/inventory-ceph ansible/monitoring-ceph.yml
+
+
+# What's New
+
+- Terraform used instead of heat + stackhp.cluster-infra role.
+- Only currently supports OpenHPC cluster (playbooks: `cluster-infra` and `cluster-infra-configure`)
+- VM login node (only on `ilab` network - hardcoded in terraform).
+- IB only configured on nodes with low latency network (as defined by `lln_name` in `ansible/group_vars/all/alaska`)
+- NFS added as a a cluster filesystem option.
+- FIXME: monitoring disabled.
+- FIXME: sdd removed from raid array (because its broken on one node).
+- Uses `actions` branch of stackhpc.openhpc role.
+- First level of `cluster_groups` config var not used to drive groups of `openstack_compute_instance_v2` resource creation - simply can't do it in TF.
