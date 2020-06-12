@@ -191,4 +191,5 @@ extra_packages:
   - htop
   - screen
   - tmux
+  - git
 ...
