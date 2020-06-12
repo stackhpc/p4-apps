@@ -62,7 +62,7 @@ modified:
 
 | Name | Description |
 |------|-------------|
-| `cluster_name`    | Name of the Heat stack to be created, and also stem of the hostnames of compute and controller nodes |
+| `cluster_name`    | Prefix for hostnames of compute and controller nodes |
 | `cluster_keypair` | An existing RSA keypair that has been previously uploaded to OpenStack |
 | `cluster_groups`  | Definitions for the number of groups of compute nodes in the execution framework infrastructure, and how the compute nodes in each of those roles should be configured |
 

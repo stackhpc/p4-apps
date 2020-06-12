@@ -6,6 +6,7 @@
   gather_facts: false
   tasks:
     # we want to provide a single, nested, "config" var to tf, so add nesting here:
+    # NB: this actually gets ALL the hostvars, not just the config, but this is actually useful
     - set_fact:
         tf_config:
           config: "{{ hostvars[inventory_hostname] }}"
