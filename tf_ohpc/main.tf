@@ -14,7 +14,7 @@ data "external" "tf_control_hostname" {
 }
 
 locals {
-  config = yamldecode(file("openhpc.yml"))
+  config = yamldecode(file("../config/deploy.yml"))
   tf_dir = "${data.external.tf_control_hostname.result.hostname}:${path.cwd}"
 }
 

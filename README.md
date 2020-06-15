@@ -55,7 +55,7 @@ The following examples use the production inventory.
 Both terraform and ansible are configured configured locally through YAML files.
 
 As part of development these are currently split between:
-- `tf_ohpc/openhpc.yml` - only those variables needed to create the cluster nodes
+- `config/deploy.yml` - only those variables needed to create the cluster nodes
 - `config/openhpc.yml` - only those variables needed to configure the cluster
 (i.e. there are no double-defintions)
 
@@ -72,9 +72,9 @@ subdirectory.  This inventory is suffixed with the value set in
 `cluster_name`.  The cluster software can be deployed and configured
 using another playbook (for example):
 
-     ansible-playbook -i ansible/inventory-p4 --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @tf_ohpc/openhpc.yml ansible/slurm.yml
+     ansible-playbook -i ansible/inventory-p4 --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @config/deploy.yml ansible/slurm.yml
 
-TODO: Fix the double config/extravars!
+TODO: Fix the double config/extravars?
 
 **END UPDATE**
 
