@@ -1,0 +1,58 @@
+# This file is all the variables needed by terraform to set up the cluster infra.
+
+cloud:
+    name: alaska # name in clouds.yaml
+
+cluster:
+    name: p4
+    keypair: id-rsa-alaska
+    user: centos
+    groups: ["login", "compute"]
+    login:
+        flavor: "general.v1.medium" # VM
+        num_nodes: 1
+        networks:
+            - "ilab"
+        image: "CentOS7.8-OpenHPC"
+        config_drive: false
+    compute:
+        flavor: "compute-A"
+        num_nodes: 2
+        networks:
+            - "ilab"
+            - "p3-bdn"
+            - "p3-lln"
+        image: "CentOS7.8-OpenHPC"
+        config_drive: true
+    roles:
+    - name: "ceph_client"
+      groups: ["login", "compute"]
+    - name: "latest_packages"
+      groups: ["login", "compute"]
+    - name: "login"
+      groups: ["login"]
+    - name: "control"
+      groups: ["login"]
+    - name: "batch"
+      groups: ["compute"]
+    - name: "runtime"
+      groups: ["login", "compute"]
+    - name: "mdadm"
+      groups: ["compute"]
+    - name: "glusterfs_server"
+      groups: ["compute"]
+    - name: "glusterfs_client"
+      groups: ["compute"]
+    - name: "beegfs_mgmt"
+      groups: ["login"]
+    - name: "beegfs_mds"
+      groups: ["login"]
+    - name: "beegfs_oss"
+      groups: ["compute"]
+    - name: "beegfs_client"
+      groups: ["login", "compute"]
+    - name: "nfs_server"
+      groups: ["login"]
+    - name: "nfs_client"
+      groups: ["compute"]
+
