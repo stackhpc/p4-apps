@@ -39,10 +39,6 @@ cluster:
       groups: ["login", "compute"]
     - name: "mdadm"
       groups: ["compute"]
-    - name: "glusterfs_server"
-      groups: ["compute"]
-    - name: "glusterfs_client"
-      groups: ["compute"]
     - name: "beegfs_mgmt"
       groups: ["login"]
     - name: "beegfs_mds"

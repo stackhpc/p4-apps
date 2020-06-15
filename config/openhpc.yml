@@ -73,10 +73,6 @@ cluster_roles:
     groups: "{{ cluster_groups }}"
   - name: "mdadm"
     groups: [ "{{ slurm_compute }}" ]
-  - name: "glusterfs_server"
-    groups: [ "{{ slurm_compute }}" ]
-  - name: "glusterfs_client"
-    groups: [ "{{ slurm_compute }}" ]
   - name: "beegfs_mgmt"
     groups: [ "{{ slurm_login }}" ]
   - name: "beegfs_mds"
@@ -96,24 +92,8 @@ cluster_roles:
 openhpc_slurm_partitions: 
   - "{{ slurm_compute }}"
 
-# Choose between glusterfs, beegfs, nfs and none.
+# Choose between beegfs, nfs and none.
 cluster_fs: nfs
-
-# Gluster server config
-gluster_cluster_volume_name: "{{ cluster_name }}"
-gluster_cluster_block_devices:
-- md0
-gluster_cluster_transport_interface: ib0
-gluster_cluster_transport_mode: rdma
-gluster_cluster_force_format: no
-gluster_cluster_volume_options:
-  cluster.nufa: 'on'
-  performance.cache-size: '10GB'
-  diagnostics.brick-log-level: 'WARNING'
-
-# Gluster client config
-gluster_src: "localhost:/{{ gluster_cluster_volume_name }}"
-gluster_mnt: "/mnt/{{ gluster_cluster_volume_name }}"
 
 # Config for Ceph mount
 ceph_mount_enabled: false

@@ -13,7 +13,6 @@
   version: 1.0.4
 - src: stackhpc.monasca-rsyslog
 - src: stackhpc.grafana-conf
-- src: stackhpc.gluster-cluster
 - src: https://github.com/stackhpc/ansible-role-openhpc
   version: actions
   name: stackhpc.openhpc
