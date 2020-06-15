@@ -9,22 +9,21 @@
 - import_playbook: latest-packages.yml
 
 # Add openstack configuration
-- import_playbook: os-config.yml
+#- import_playbook: os-config.yml # TODO: could we not do this using clouds.yaml anyway??
 
 # Use mdadm to create software defined raid
-- import_playbook: mdadm.yml
+#- import_playbook: mdadm.yml
 
 # Use mdadm to create software defined raid
-- import_playbook: parted.yml
+#- import_playbook: parted.yml
 
 # Setup ceph mount
-- import_playbook: manila-client.yml
-  when: ceph_mount_enabled | default(false) | bool
+#- import_playbook: manila-client.yml
+#  when: ceph_mount_enabled | default(false) | bool
 
 # Setup hyperconverged storage. Current clusterfs options are:
-# - glusterfs
 # - beegfs
-# - <undefined>
+# - nfs
 - import_playbook: '{{ cluster_fs }}.yml'
   when: cluster_fs is defined
 

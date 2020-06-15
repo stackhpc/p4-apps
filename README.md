@@ -52,25 +52,19 @@ The following examples use the production inventory.
 
 ### Creating Infrastructure Using Terraform
 
-**UPDATED:**
+Both terraform and ansible are configured configured locally through YAML files.
 
-Both terraform and ansible are configured configured locally through YAML environment files, then invoked through the `cluster-infra.yml` playbook which drives terraform.
+As part of development these are currently split between:
+- `tf_ohpc/openhpc.yml` - only those variables needed to create the cluster nodes
+- `config/openhpc.yml` - only those variables needed to configure the cluster
+(i.e. there are no double-defintions)
 
-Some example YAML template configurations are available in the `config/`
-subdirectory.  To use these, some default parameters should first be
-modified:
+Modify these as required.
 
-| Name | Description |
-|------|-------------|
-| `cluster_name`    | Prefix for hostnames of compute and controller nodes |
-| `cluster_keypair` | An existing RSA keypair that has been previously uploaded to OpenStack |
-| `cluster_groups`  | Definitions for the number of groups of compute nodes in the execution framework infrastructure, and how the compute nodes in each of those roles should be configured |
+Then, create the infrastructure using: 
 
-Infrastructure invocation then takes the form (for example): 
-
-    ansible-playbook -i localinventory --vault-password-file vault-password -e @config/openhpc.yml ansible/cluster-infra.yml
-
-**NB:** Currently secrets are disabled (for testing) so no vault password/arguments are required.
+    cd tf_ohpc
+    terraform apply # uses tf_ohpc/openhpc.yml only
 
 Once the infrastructure playbook has run to completion, an inventory
 for the newly-created nodes will have been generated in the `ansible/`
@@ -78,7 +72,9 @@ subdirectory.  This inventory is suffixed with the value set in
 `cluster_name`.  The cluster software can be deployed and configured
 using another playbook (for example):
 
-    ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml -i ansible/inventory-p4 ansible/cluster-infra-configure.yml
+     ansible-playbook -i ansible/inventory-p4 --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @tf_ohpc/openhpc.yml ansible/slurm.yml
+
+TODO: Fix the double config/extravars!
 
 **END UPDATE**
 

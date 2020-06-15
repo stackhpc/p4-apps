@@ -7,8 +7,9 @@ cluster:
     name: p4
     keypair: id-rsa-alaska
     user: centos
-    groups: ["login", "compute"]
+    groups: ["login", "compute"] # TODO: change this to a dict
     login:
+        name: "login"
         flavor: "general.v1.medium" # VM
         num_nodes: 1
         networks:
@@ -16,6 +17,7 @@ cluster:
         image: "CentOS7.8-OpenHPC"
         config_drive: false
     compute:
+        name: "compute"
         flavor: "compute-A"
         num_nodes: 2
         networks:

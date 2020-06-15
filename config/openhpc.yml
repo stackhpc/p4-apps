@@ -1,96 +1,8 @@
 ---
 
-# Name of Openstack cloud in clouds.yaml to use
-cloud: "alaska"
-
-# This name is used for the Heat stack and as a prefix for the
-# cluster node hostnames.
-cluster_name: p4
-
-# This parameter should be set to the name of an RSA keypair you have
-# uplaoded to OpenStack.
-cluster_keypair: id-rsa-alaska
-
-# Site-specific network configuration.
-cluster_net:
-  - { net: "ilab", subnet: "ilab" }
-  - { net: "p3-bdn", subnet: "p3-bdn" }
-  - { net: "p3-lln", subnet: "p3-lln" }
-
-# Default nodenet to use for all instances in the cluster
-cluster_nodenet_resource: "Cluster::NodeNet3"
-
-# Enable the use of config drive, for managing IP assignment on IPoIB
-cluster_config_drive: true
-
-# Multi-node application topology.  In this case we have a SLURM
-# deployment formed from a login/controller node and a number of
-# batch compute nodes.
-cluster_groups:
-  - "{{ slurm_login }}"
-  - "{{ slurm_compute }}"
-
-# Login node configuration.
-slurm_login_flavor: "general.v1.medium" # VM
-slurm_login_image: "CentOS7.8-OpenHPC"
-slurm_login_num_nodes: 1
-
-slurm_login:
-  name: "login"
-  flavor: "{{ slurm_login_flavor }}"
-  image: "{{ slurm_login_image}}"
-  num_nodes: "{{ slurm_login_num_nodes }}"
-  user: "centos"
-
-# Compute node configuration.
-slurm_compute_flavor: "compute-A"
-slurm_compute_image: "CentOS7.8-OpenHPC"
-slurm_compute_num_nodes: 2
-
-slurm_compute:
-  name: "compute"
-  flavor: "{{ slurm_compute_flavor }}"
-  image: "{{ slurm_compute_image}}"
-  num_nodes: "{{ slurm_compute_num_nodes }}"
-  user: "centos"
-
-# Node group assignments for cluster roles.
-# These group assignments are appended to the cluster inventory file.
-# The names of these roles are cross-referenced to groups referred to
-# in playbooks in the ansible/ directory.
-cluster_roles:
-  - name: "ceph_client"
-    groups: "{{ cluster_groups }}"
-  - name: "latest_packages"
-    groups: "{{ cluster_groups }}"
-  - name: "login"
-    groups: [ "{{ slurm_login }}" ]
-  - name: "control"
-    groups: [ "{{ slurm_login }}" ]
-  - name: "batch"
-    groups: [ "{{ slurm_compute }}" ]
-  - name: "runtime"
-    groups: "{{ cluster_groups }}"
-  - name: "mdadm"
-    groups: [ "{{ slurm_compute }}" ]
-  - name: "beegfs_mgmt"
-    groups: [ "{{ slurm_login }}" ]
-  - name: "beegfs_mds"
-    groups: [ "{{ slurm_login }}" ]
-  - name: "beegfs_oss"
-    groups: [ "{{ slurm_compute }}" ]
-  - name: "beegfs_client"
-    groups:
-    - "{{ slurm_login }}"
-    - "{{ slurm_compute }}" 
-  - name: "nfs_server"
-    groups: [ "{{ slurm_login }}" ]
-  - name: "nfs_client"
-    groups: [ "{{ slurm_compute }}" ]
-
 # Define a list of SLURM partitions to create.
 openhpc_slurm_partitions: 
-  - "{{ slurm_compute }}"
+   - "{{ cluster.compute }}"
 
 # Choose between beegfs, nfs and none.
 cluster_fs: nfs
@@ -120,26 +32,26 @@ beegfs_client:
   port: 28004
   mgmt_host: "storage-nvme-node-0"
 
-# Software defined raid config
-md0:
-  # Define array name
-  name: 'md0'
-  # Define disk devices to assign to array
-  devices:
-    - '/dev/sdb'
-    - '/dev/sdc'
-    # - '/dev/sdd' this has failed on one of the nodes so ignore it!
-  # Define filesystem to partition array with
-  filesystem: 'xfs'
-  filesystem_opts: ''
-  # Define the array raid level
-  # 0|1|4|5|6|10
-  level: '0'
-  # Define if array should be present or absent
-  state: 'present'
+# # Software defined raid config
+# md0:
+#   # Define array name
+#   name: 'md0'
+#   # Define disk devices to assign to array
+#   devices:
+#     - '/dev/sdb'
+#     - '/dev/sdc'
+#     # - '/dev/sdd' this has failed on one of the nodes so ignore it!
+#   # Define filesystem to partition array with
+#   filesystem: 'xfs'
+#   filesystem_opts: ''
+#   # Define the array raid level
+#   # 0|1|4|5|6|10
+#   level: '0'
+#   # Define if array should be present or absent
+#   state: 'present'
 
-mdadm_arrays:
-  - "{{ md0 }}"
+# mdadm_arrays:
+#   - "{{ md0 }}"
 
 # NFS config: none required/permitted
 

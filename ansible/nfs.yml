@@ -1,7 +1,7 @@
 ---
 # This uses nfs to export {{ alaska_homedir }} from the first login node to the compute nodes via the {{ ext_name }} network.
 
-  - name: Deploy nfs
+- name: Deploy nfs
   hosts:
   - cluster_nfs_server
   - cluster_nfs_client

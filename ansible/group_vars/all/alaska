@@ -45,99 +45,30 @@ grafana_admin_password: "{{ vault_grafana_admin_password }}"
 
 # List of cluster users, already defined in OpenStack
 alaska_users:
-  - name: "Chris Broekema"
-    user: chris
-    uid: 2001
-  - name: "Paul Browne"
-    user: paul
-    uid: 2002
   - name: "Mark Goddard"
     user: mark
     uid: 2003
-  - name: "Vlad Stolyarov"
-    user: vlad
-    uid: 2004
   - name: "John Taylor"
     user: john
     uid: 2005
   - name: "Stig Telfer"
     user: stig
     uid: 2006
-  - name: "Ben Mort"
-    user: ben
-    uid: 2007
-  - name: "Fred Dulwich"
-    user: fred
-    uid: 2009
-  - name: "Alasdair King"
-    user: alasdair
-    uid: 2010
-  - name: "Verity Allan"
-    user: verity
-    uid: 2011
-  - name: "Nijin Thykkathu"
-    user: nijin
-    uid: 2012
-  - name: "James Kent"
-    user: james
-    uid: 2013
-  - name: "Tim Cornwell"
-    user: tim
-    uid: 2014
-  - name: "Piers Harding"
-    user: piers
-    uid: 2015
-  - name: "Arjen Tamerus"
-    user: arjen
-    uid: 2016
-  - name: "Bojan Nikolic"
-    user: bojan
-    uid: 2017
-  - name: "Brian"
-    user: brian
-    uid: 2018
   - name: "Doug Szumski"
     user: doug
     uid: 2019
   - name: "John Garbutt"
     user: johng
     uid: 2020
-  - name: "Mark Boulton"
-    user: markb
-    uid: 2021
-  - name: "Markus Dolensky"
-    user: markus
-    uid: 2022
-  - name: "Danielle Fenech"
-    user: danielle
-    uid: 2023
   - name: "Bharat Kunwar"
     user: bharat
     uid: 2024
-  - name: "Peter Wortmann"
-    user: peter
-    uid: 2025
   - name: "Kitrick Sheets"
     user: kitrick
     uid: 2026
-  - name: "Jeffrey Salmond"
-    user: jeffrey
-    uid: 2029
-  - name: "Mark Ashdown"
-    user: marka
-    uid: 2030
-  - name: "Feng Wang"
-    user: feng
-    uid: 2031
   - name: "Steve Brasier"
     user: steveb
     uid: 2032
-  - name: "Rohini Joshi"
-    user: rohini
-    uid: 2035
-  - name: "James Collinson"
-    user: jamesc
-    uid: 2036
 
 alaska_admin_user: centos
 
