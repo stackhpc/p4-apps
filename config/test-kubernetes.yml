@@ -1,7 +1,0 @@
----
-# Avoid a conflict with the production cluster.
-cluster_name: test-kubernetes
-cluster_keypair: stack
-cluster_master_count: 1
-cluster_worker_count: 1
-gluster_src:
