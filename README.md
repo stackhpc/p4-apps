@@ -72,98 +72,16 @@ subdirectory.  This inventory is suffixed with the value set in
 `cluster_name`.  The cluster software can be deployed and configured
 using another playbook (for example):
 
-     ansible-playbook -i ansible/inventory-p4 --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @config/deploy.yml ansible/slurm.yml
+     ansible-playbook -i ansible/inventory-p4 --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @config/deploy.yml ansible/cluster-infra-configure.yml
 
 TODO: Fix the double config/extravars?
 
 **END UPDATE**
 
-### Deploying and configuring Swarm SIP
-
-To deploy Swarm SIP cluster attached to `p3-bdn` and `p3-lln` network
-interfaces, first create the cluster and generate cluster inventory and request
-openstack to attach these interfaces:
-
-    ansible-playbook --vault-password-file vault-password -i ansible/inventory -e @config/swarm-sip.yml ansible/container-infra.yml
-
-Then, run the second playbook to:
-- Configure IB interface attached to `p3-lln` network as DHCP is not enabled
-  for this interface.
-- Mount the gluster volume.
-- Adds public keys specified under `public_keys` folder to the authorised keys
-  on the instances.
-
-    ansible-playbook --vault-password-file=vault-password -i ansible/inventory-swarm-sip -e @config/swarm-sip.yml ansible/container-infra-configure.yml
-
-To deploy monasca monitoring on Swarm SIP nodes, first activate cluster config:
-
-    $(mkdir -p swarm-sip && openstack coe cluster config swarm-sip --force --dir=swarm-sip)
-
-Then, run the monitoring deployment playbook:
-
-    ansible-playbook --vault-password-file vault-password -i ansible/inventory -e @config/swarm-sip.yml ansible/monitoring-monasca-container.yml
-
-### Deploying and configuring Kubernetes
-
-To deploy a Kubernetes cluster attached to `p3-bdn` and `p3-lln` network
-interfaces, first create the cluster and generate cluster inventory and request
-openstack to attach these interfaces:
-
-    ansible-playbook --vault-password-file vault-password -i ansible/inventory -e @config/kubernetes.yml ansible/container-infra.yml
-
-Then, run the second playbook to:
-- Configure IB interface attached to `p3-lln` network as DHCP is not enabled
-  for this interface.
-- Mount the gluster volume.
-- Adds public keys specified under `public_keys` folder to the authorised keys
-  on the instances.
-
-    ansible-playbook --vault-password-file=vault-password -i ansible/inventory-kubernetes -e @config/kubernetes.yml ansible/container-infra-configure.yml
-
-While the deployment instructions for Kubernetes is identical to Docker Swarm,
-there is an additional playbook available to handle upgrades which can be
-invoked as follows:
-
-    ansible-playbook --vault-password-file vault-password -i ansible/inventory-k8s -e k8s_version=1.11.2 ansible/container-infra-upgrade.yml
-
-### Dedicated GlusterFS/BeeGFS Storage
-
-Creating gluster storage cluster infrastructure using storage-A (nvme) and storage-B (ssd) flavours:
-
-    ansible-playbook --vault-password-file vault-password -e @config/storage-ssd.yml -i ansible/inventory ansible/cluster-infra.yml
-    ansible-playbook --vault-password-file vault-password -e @config/storage-nvme.yml -i ansible/inventory ansible/cluster-infra.yml
-
-Configuring openhpc and storage nodes to share common hostname namespace:
-
-    ansible-playbook --vault-password-file vault-password -i ansible/inventory-openhpc -i ansible/inventory-storage-nvme -i ansible/inventory-storage-ssd ansible/setup.yml
-
-To setup BeeGFS server:
-
-    ansible-playbook --vault-password-file vault-password -e @config/storage-ssd.yml -i ansible/inventory-storage-ssd ansible/beegfs.yml
-    ansible-playbook --vault-password-file vault-password -e @config/storage-nvme.yml -i ansible/inventory-storage-nvme ansible/beegfs.yml
-
-NOTES:
-- Add `-e beegfs_force_format=yes` option to force disk to be formatted if it is being used for something else or not empty
-- Add `-e beegfs_state=absent` option to destroy node
-
-To setup GlusterFS server:
-
-    ansible-playbook --vault-password-file vault-password -e @config/storage-ssd.yml -i ansible/inventory-storage-ssd ansible/glusterfs.yml
-    ansible-playbook --vault-password-file vault-password -e @config/storage-nvme.yml -i ansible/inventory-storage-nvme ansible/glusterfs.yml
-
-To setup hyperconverged storage and mount storage on OpenHPC node:
-
-    ansible-playbook --vault-password-file vault-password -e @config/openhpc.yml -i ansible/inventory-openhpc ansible/cluster-infra-configure.yml
-
-# Monitoring Ceph
-
-To configure monitoring of the Ceph cluster
-
-ansible-playbook --vault-password-file vault.pass -i ansible/inventory-ceph ansible/monitoring-ceph.yml
-
 
 # What's New
 
+- Only `openhpc` cluster functionality included.
 - Terraform used instead of heat + stackhp.cluster-infra role.
 - Only currently supports OpenHPC cluster (playbooks: `cluster-infra` and `cluster-infra-configure`)
 - VM login node (only on `ilab` network - hardcoded in terraform).
