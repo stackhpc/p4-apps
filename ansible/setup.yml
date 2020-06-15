@@ -16,3 +16,4 @@
       kdump_core_collector_args: makedumpfile -l --message-level 1 -d 31
       when: kdump_enable | default(false)
     - role: cluster_setup
+      setup_hosts_enable: false

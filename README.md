@@ -172,4 +172,4 @@ ansible-playbook --vault-password-file vault.pass -i ansible/inventory-ceph ansi
 - FIXME: monitoring disabled.
 - FIXME: sdd removed from raid array (because its broken on one node).
 - Uses `actions` branch of stackhpc.openhpc role.
-- First level of `cluster_groups` config var not used to drive groups of `openstack_compute_instance_v2` resource creation - simply can't do it in TF.
+- Does not generate `/etc/hosts` - not needed now DNS fixed.
