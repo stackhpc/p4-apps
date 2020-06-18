@@ -7,6 +7,10 @@ openhpc_slurm_partitions:
 # Choose between beegfs, nfs and none.
 cluster_fs: nfs
 
+openhpc_slurm_conf:
+  location: "{{ alaska_homedir }}/slurm/slurm.conf"
+  shared_fs: true
+
 # Config for Ceph mount
 ceph_mount_enabled: false
 ceph_mount_fuse: false
