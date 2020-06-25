@@ -34,7 +34,7 @@ resource "openstack_compute_instance_v2" "compute" {
 
   for_each = data.external.openstack_baremetal.result
 
-  name = "${local.config.cluster.name}-${local.config.cluster.compute.name}-${each.value}" # .value is baremetal node name
+  name = "${local.config.cluster.name}-${local.config.cluster.compute.name}-${each.key}"
   image_name = local.config.cluster.compute.image
   flavor_name = local.config.cluster.compute.flavor
   key_pair = local.config.cluster.keypair
