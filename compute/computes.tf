@@ -39,6 +39,7 @@ resource "openstack_compute_instance_v2" "compute" {
   flavor_name = local.config.cluster.compute.flavor
   key_pair = local.config.cluster.keypair
   config_drive = local.config.cluster.compute.config_drive
+  availability_zone = "nova::${each.value}" # TODO: availability zone should probably be from config too?s
 
   dynamic "network" {
     for_each = local.config.cluster.compute.networks
