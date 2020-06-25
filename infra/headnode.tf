@@ -10,7 +10,7 @@ provider "openstack" {
 }
 
 data "external" "tf_control_hostname" {
-  program = ["./gethost.sh"] 
+  program = ["../tf_scripts/gethost.sh"]
 }
 
 locals {
@@ -37,44 +37,22 @@ resource "openstack_compute_instance_v2" "login" {
   }
   
   metadata = {
-    "terraform directory" = local.tf_dir
+    "terraform directory" = local.tf_dir,
+    "cluster" = local.config.cluster.name
   }
 }
 
-resource "openstack_compute_instance_v2" "compute" {
-
-  count = local.config.cluster.compute.num_nodes
-
-  name = "${local.config.cluster.name}-compute-${count.index}"
-  image_name = local.config.cluster.compute.image
-  flavor_name = local.config.cluster.compute.flavor
-  key_pair = local.config.cluster.keypair
-  config_drive = local.config.cluster.compute.config_drive
-
-  dynamic "network" {
-    for_each = local.config.cluster.compute.networks
-
-    content {
-      name = network.value
-    }
-  }
-  
-  metadata = {
-    "terraform directory" = local.tf_dir
-  }
-}
 
 # TODO: probably needs fixing for multiple control/login nodes
 # TODO: needs fixing for case where creation partially fails resulting in "compute.network is empty list of object"
 resource "local_file" "hosts" {
-  content  = templatefile("${path.module}/inventory.tpl",
+  content  = templatefile("${path.module}/inventory_head.tpl",
                           {
                             "config":local.config,
                             "logins":openstack_compute_instance_v2.login,
-                            "computes":openstack_compute_instance_v2.compute,
                           },
                           )
-  filename = "${path.module}/../ansible/inventory-${local.config.cluster.name}" # NB working dir is project_path in ansible
+  filename = "${path.module}/../inventory/inventory_head.ini"
 }
 
 output "login_ip_addr" {
