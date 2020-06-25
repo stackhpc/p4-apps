@@ -17,8 +17,9 @@ cluster:
         image: "CentOS7.8-OpenHPC"
         config_drive: false
     compute:
-        name: "compute"
+        name: "batch"
         flavor: "compute-A"
+        resource_class: "COMPUTE_A" # only defined if baremetal - could use this fact?
         num_nodes: 2
         networks:
             - "ilab"
@@ -26,6 +27,7 @@ cluster:
             - "p3-lln"
         image: "CentOS7.8-OpenHPC"
         config_drive: true
+
     roles:
     - name: "ceph_client"
       groups: ["login", "compute"]
