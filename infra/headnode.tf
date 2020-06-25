@@ -52,7 +52,7 @@ resource "local_file" "hosts" {
                             "logins":openstack_compute_instance_v2.login,
                           },
                           )
-  filename = "${path.module}/../inventory/inventory_head.ini"
+  filename = "${path.module}/../inventory/inventory_head"
 }
 
 output "login_ip_addr" {
