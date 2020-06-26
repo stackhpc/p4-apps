@@ -1,15 +1,18 @@
-P3 Appliances
+P4-Apps
 =============
 
-WIP: terraform version of p3-appliances. MOST OF THIS WILL BE OUT OF DATE UNLESS MARKED *UPDATED*.
+Work-in-progress for a terraform-defined Slurm cluster with:
+- VM login nodes
+- Baremetal or VM compute nodes
+- Slurm-driven reimaging
+- Resizing of compute nodes
+- Flexible, ansible-based deployment of addtional cluster functionality e.g. filesystems, monitoring etc.
 
-A repo of tools for creating software-defined platforms for the ALaSKA P3 project.
-
-
-- Ansible playbooks (including Galaxy roles) for integrating with OpenStack services, and creating 
-  software middleware platforms on top of OpenStack infrastructure.
+Not all the above currently works.
 
 ## Installation
+
+**THIS NEEDS UPDATING**
 
 It is recommended to install python dependencies in a virtual environment:
 
@@ -37,19 +40,6 @@ Prior to using stackhpc-appliances, ensure the virtual environment is activated:
 
     source venv/bin/activate
 
-### ALaSKA Environments
-
-There are two ALaSKA environments - Production and Alt-1. This repository
-supports both of these environments. To use a specific environment, ensure that
-any OpenStack authentication environment variables reference the correct
-environment. When executing playbooks, be sure to use the correct Ansible
-inventory:
-
-* `ansible/inventory` is for production
-* `ansible/inventory-alt-1` is for alt-1
-
-The following examples use the production inventory.
-
 ### Creating Infrastructure Using Terraform
 
 Both terraform and ansible are configured configured locally through YAML files.
@@ -59,35 +49,34 @@ As part of development these are currently split between:
 - `config/openhpc.yml` - only those variables needed to configure the cluster
 (i.e. there are no double-defintions)
 
-Modify these as required.
 
-Then, create the infrastructure using: 
+1. Modify these as required.
 
-    cd tf_ohpc
-    terraform apply # uses tf_ohpc/openhpc.yml only
+2. Create the head node using:
 
-Once the infrastructure playbook has run to completion, an inventory
-for the newly-created nodes will have been generated in the `ansible/`
-subdirectory.  This inventory is suffixed with the value set in
-`cluster_name`.  The cluster software can be deployed and configured
-using another playbook (for example):
+        cd infra
+        terraform apply # uses tf_ohpc/deploy.yml only
 
-     ansible-playbook -i ansible/inventory-p4 --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @config/deploy.yml ansible/cluster-infra-configure.yml
+3. Create the compute nodes using:
 
-TODO: Fix the double config/extravars?
+        cd ../computes
+        terraform apply # uses tf_ohpc/deploy.yml only
 
-**END UPDATE**
+These will generate inventory files in the `inventory/` directory.
 
+4. Deploy and configure software using:
 
-# What's New
+        cd <repo root>
+        ansible-playbook -i inventory/ --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @config/deploy.yml ansible/cluster.yml
 
-- Only `openhpc` cluster functionality included.
-- Terraform used instead of heat + stackhp.cluster-infra role.
-- Only currently supports OpenHPC cluster (playbooks: `cluster-infra` and `cluster-infra-configure`)
-- VM login node (only on `ilab` network - hardcoded in terraform).
-- IB only configured on nodes with low latency network (as defined by `lln_name` in `ansible/group_vars/all/alaska`)
-- NFS added as a a cluster filesystem option.
-- FIXME: monitoring disabled.
-- FIXME: sdd removed from raid array (because its broken on one node).
+# Selected changes from p3-appliances
+Aside from functionality specifically listed above:
+- Only manages OpenHPC cluster.
+- Uses terraform instead of Heat + cluster-infra role.
 - Uses `actions` branch of stackhpc.openhpc role.
 - Does not generate `/etc/hosts` - not needed now DNS fixed.
+
+# TODO
+- FIXME: Remove double config/extravars in ansible
+- FIXME: monitoring is disabled
+- FIXME: sdd removed from raid array (because its broken on one node).
