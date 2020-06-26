@@ -1,0 +1,34 @@
+- hosts:
+  - openstack
+  gather_facts: false
+  vars:
+    # access_rules: # don't work in Train
+    #   - path: "/v3/servers/{server_id}/action"
+    #     method: POST
+    #     service: compute
+    cred_name: "{{ cluster['name'] }}_compute"
+  tasks:
+    - name:  Check for OS credential
+      shell:
+        cmd: "openstack application credential show {{ cred_name }} --format json"
+      register: os_cred_exists
+      failed_when: false
+    - name: Create OS credential
+      shell:
+        cmd: "openstack application credential create {{ cred_name }} --format json"
+      when: os_cred_exists.rc != 0
+      register: os_cred_created
+    - set_fact:
+        os_cred_result: "{{ os_cred_created.stdout | from_json }}"
+    - debug:
+        var: os_cred_result['secret']
+    - debug:
+        var: os_cred_result['id']
+    
+    
+    # TODO: get auth_url from clouds.yaml
+    # ansible/group_vars/alaska:controller_vip: 10.60.253.1
+    
+    
+
+  
