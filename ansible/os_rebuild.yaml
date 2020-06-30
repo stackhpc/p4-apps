@@ -1,6 +1,5 @@
 # NB: access rules don't work in train so don't use them
-# NB: this won't work if the app cred exists but the compute servers don't have it, as we can't retrieve the secret
-# and actually that means this is no good for NEW hosts!
+# NB: because we can't retrieve the secret this writes an (unencrpyted) local file
 # maybe we should create one per server??
 - hosts: openstack
   #gather_facts: false
@@ -11,54 +10,56 @@
     #     service: compute
     cred_name: "{{ cluster['name'] }}_compute"
   tasks:
-    - name: Get Openstack config
-      shell:
-        cmd: "openstack configuration show -f json"
-      register: os_config
-    - set_fact:
-        os_config_result: "{{ os_config.stdout | from_json }}"
-    - name:  Check for OS credential
-      shell:
-        cmd: "openstack application credential show {{ cred_name }} --format json"
-      register: os_cred_exists
-      failed_when: false
-    - name: Create OS credential
-      shell:
-        cmd: "openstack application credential create {{ cred_name }} --format json"
-      when: os_cred_exists.rc != 0
-      register: os_cred_created
-    - set_fact:
-        os_cred_result: "{{ os_cred_created.stdout | from_json }}"
+    - name: Check for app cred cloud file
+      stat:
+        path: "{{ cred_name }}_cloud.yaml"
+      register: local_cloud
+    - block:
+      - name: Get Openstack config
+        shell:
+          cmd: "openstack configuration show -f json"
+        register: os_config_result
+      - name:  Check for OS credential
+        shell:
+          cmd: "openstack application credential show {{ cred_name }} --format json"
+        register: os_cred_exists
+        failed_when: false
+      - name: Create OS credential
+        shell:
+          cmd: "openstack application credential create {{ cred_name }} --format json"
+        when: os_cred_exists.rc != 0
+        register: os_cred_created
+      - name: Create/overwrite clouds.yaml with app cred
+        vars:
+          os_config: "{{ os_config_result.stdout | from_json }}"
+          os_cred: "{{ os_cred_created.stdout | from_json }}"
+        copy:
+          content: |
+            clouds:
+              {{ cloud.name }}:
+                auth:
+                  auth_url: {{ os_config.auth_url }}
+                  application_credential_id: "{{ os_cred.id }}"
+                  application_credential_secret: "{{ os_cred.secret }}"
+                region_name: "{{ os_config.region_name }}"
+                interface: "{{ os_config.interface }}"
+                identity_api_version: {{ os_config.identity_api_version }}
+                auth_type: "v3applicationcredential"
+          dest: "{{ cred_name }}_cloud.yaml"
+      when: not local_cloud.stat.exists
 
 - hosts: cluster_batch
   gather_facts: false
   become: true
   vars:
-    openstack: "{{ hostvars[groups['openstack'] | first] }}"
+    cred_name: "{{ cluster['name'] }}_compute"
   tasks:
     - name: Create /etc/openstack/
       file:
         path: "/etc/openstack/"
         state: directory
-    - name: Check for app cred in clouds.yaml
-      shell:
-        cmd: "grep {{ openstack.os_cred_result.id }} /etc/openstack/clouds.yaml"
-      failed_when: false
-      register: grep_app_id
-    - name: Create/overwrite clouds.yaml with app cred
+    - name: Copy application cred
       copy:
-        content: |
-          clouds:
-            {{ cloud.name }}:
-              auth:
-                auth_url: {{ openstack.os_config_result.auth_url }}
-                application_credential_id: "{{ openstack.os_cred_result.id }}"
-                application_credential_secret: "{{ openstack.os_cred_result.secret }}"
-              region_name: "{{ openstack.os_config_result.region_name }}"
-              interface: "{{ openstack.os_config_result.interface }}"
-              identity_api_version: {{ openstack.os_config_result.identity_api_version }}
-              auth_type: "v3applicationcredential"
+        src: "{{ cred_name }}_cloud.yaml"
         dest: "/etc/openstack/clouds.yaml"
-      when: grep_app_id.rc != 0 # grep returns 0 for a successful match
-
   
