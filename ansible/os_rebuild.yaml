@@ -1,6 +1,9 @@
-- hosts:
-  - openstack
-  gather_facts: false
+# NB: access rules don't work in train so don't use them
+# NB: this won't work if the app cred exists but the compute servers don't have it, as we can't retrieve the secret
+# and actually that means this is no good for NEW hosts!
+# maybe we should create one per server??
+- hosts: openstack
+  #gather_facts: false
   vars:
     # access_rules: # don't work in Train
     #   - path: "/v3/servers/{server_id}/action"
@@ -8,6 +11,12 @@
     #     service: compute
     cred_name: "{{ cluster['name'] }}_compute"
   tasks:
+    - name: Get Openstack config
+      shell:
+        cmd: "openstack configuration show -f json"
+      register: os_config
+    - set_fact:
+        os_config_result: "{{ os_config.stdout | from_json }}"
     - name:  Check for OS credential
       shell:
         cmd: "openstack application credential show {{ cred_name }} --format json"
@@ -20,15 +29,36 @@
       register: os_cred_created
     - set_fact:
         os_cred_result: "{{ os_cred_created.stdout | from_json }}"
-    - debug:
-        var: os_cred_result['secret']
-    - debug:
-        var: os_cred_result['id']
-    
-    
-    # TODO: get auth_url from clouds.yaml
-    # ansible/group_vars/alaska:controller_vip: 10.60.253.1
-    
-    
+
+- hosts: cluster_batch
+  gather_facts: false
+  become: true
+  vars:
+    openstack: "{{ hostvars[groups['openstack'] | first] }}"
+  tasks:
+    - name: Create /etc/openstack/
+      file:
+        path: "/etc/openstack/"
+        state: directory
+    - name: Check for app cred in clouds.yaml
+      shell:
+        cmd: "grep {{ openstack.os_cred_result.id }} /etc/openstack/clouds.yaml"
+      failed_when: false
+      register: grep_app_id
+    - name: Create/overwrite clouds.yaml with app cred
+      copy:
+        content: |
+          clouds:
+            {{ cloud.name }}:
+              auth:
+                auth_url: {{ openstack.os_config_result.auth_url }}
+                application_credential_id: "{{ openstack.os_cred_result.id }}"
+                application_credential_secret: "{{ openstack.os_cred_result.secret }}"
+              region_name: "{{ openstack.os_config_result.region_name }}"
+              interface: "{{ openstack.os_config_result.interface }}"
+              identity_api_version: {{ openstack.os_config_result.identity_api_version }}
+              auth_type: "v3applicationcredential"
+        dest: "/etc/openstack/clouds.yaml"
+      when: grep_app_id.rc != 0 # grep returns 0 for a successful match
 
   
