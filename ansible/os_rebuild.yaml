@@ -1,82 +1,37 @@
-# NB: access rules don't work in train so don't use them
-# NB: because we can't retrieve the secret this writes an (unencrpyted) local file
-# maybe we should create one per server??
-- hosts: openstack # TODO: maybe we want to do this on the head node?? Then could create file in /etc/openstack and just copy it from there
-  #gather_facts: false
-  vars:
-    # access_rules: # don't work in Train
-    #   - path: "/v3/servers/{server_id}/action"
-    #     method: POST
-    #     service: compute
-    cred_name: "{{ cluster['name'] }}_compute"
-  tasks:
-    - name: Check for app cred cloud file
-      stat:
-        path: "{{ cred_name }}_cloud.yaml"
-      register: local_cloud
-    - block:
-      - name: Get Openstack config
-        shell:
-          cmd: "openstack configuration show -f json"
-        register: os_config_result
-      - name:  Check for OS credential
-        shell:
-          cmd: "openstack application credential show {{ cred_name }} --format json"
-        register: os_cred_exists
-        failed_when: false
-      - name: Create OS credential
-        shell:
-          cmd: "openstack application credential create {{ cred_name }} --format json"
-        when: os_cred_exists.rc != 0
-        register: os_cred_created
-      - name: Create/overwrite clouds.yaml with app cred
-        vars:
-          os_config: "{{ os_config_result.stdout | from_json }}"
-          os_cred: "{{ os_cred_created.stdout | from_json }}"
-        copy:
-          content: |
-            clouds:
-              {{ cloud.name }}:
-                auth:
-                  auth_url: {{ os_config.auth_url }}
-                  application_credential_id: "{{ os_cred.id }}"
-                  application_credential_secret: "{{ os_cred.secret }}"
-                region_name: "{{ os_config.region_name }}"
-                interface: "{{ os_config.interface }}"
-                identity_api_version: {{ os_config.identity_api_version }}
-                auth_type: "v3applicationcredential"
-          dest: "{{ cred_name }}_cloud.yaml"
-      when: not local_cloud.stat.exists
-
-- hosts: cluster_control
-  become: true
-  tags:
-    - template
-  tasks:
-    - template:
-        src: ../reboot.j2
-        dest: "{{ alaska_homedir }}/slurm/reboot.py" # TODO fix assumptions/name here??
+# This just deploys the script + dependencies.
+# Use something like <see reboot.py> to rebuild.
+#
+# NB: assumes an access credential has been added to e.g. /etc/openstack - done using terraform here.
 
 - hosts: cluster_batch
   gather_facts: false
   become: true
-  vars:
-    cred_name: "{{ cluster['name'] }}_compute"
   tasks:
-    - name: Create /etc/openstack/
-      file:
-        path: "/etc/openstack/"
-        state: directory
-    - name: Copy application cred
+    - name: deploy RebootProgram
       copy:
-        src: "{{ cred_name }}_cloud.yaml"
-        dest: "/etc/openstack/clouds.yaml"
-    
-
-# TODO on compute nodes (and login, if we use that to talk to openstack??):
-# sudo yum install python3 python3-pip
-# [sudo?] pip3 install openstacksdk
-
+        src: ../reboot.py
+        dest: "{{ alaska_homedir }}/slurm/reboot.py" # TODO fix assumptions/name re. shared directory here?
+        mode: u+x
+      run_once: "{{ openhpc_slurm_conf.shared_fs }}"
+    - name: install python3
+      yum:
+        name:
+          - python3
+          - python3-pip
+    - name: install openstacksdk
+      command: pip3 install openstacksdk # TODO: pin version TODO: use virtualenv
+    - name: add RebootProgram to slurm.conf
+      lineinfile:
+        path: "{{ openhpc_slurm_conf.location }}"
+        regexp: "^RebootProgram=.*$"
+        line: "RebootProgram={{ alaska_homedir }}/slurm/reboot.py" # TODO: fix name
+      run_once: "{{ openhpc_slurm_conf.shared_fs }}"
+      register: slurm_conf
+    - name: reconfigure slurm
+      shell:
+        cmd: "SLURM_CONF={{ openhpc_slurm_conf.location }} scontrol reconfigure" # TODO: remove env var
+      when: slurm_conf.changed
+  
 # for py2:
 # sudo yum install python3
 # sudo yum install python-virtualenv
