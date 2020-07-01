@@ -55,12 +55,12 @@ As part of development these are currently split between:
 2. Create the head node using:
 
         cd infra
-        terraform apply # uses tf_ohpc/deploy.yml only
+        terraform apply # uses config/deploy.yml only
 
 3. Create the compute nodes using:
 
         cd ../computes
-        terraform apply # uses tf_ohpc/deploy.yml only
+        terraform apply # uses config/deploy.yml only
 
 These will generate inventory files in the `inventory/` directory.
 
