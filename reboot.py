@@ -12,6 +12,8 @@
 
     If the reason does not start with "rebuild" then the node is rebooted.
 
+    Note the "reason" message must be MAX_REASON_LENGTH or less.
+
     Messages and errors are logged to syslog.
 
     Requires:
@@ -22,9 +24,13 @@
         - available via a clouds.yaml file containing only one cloud
     
     [1]: https://docs.openstack.org/openstacksdk/latest/user/proxies/compute.html#modifying-a-server
+
+    TODO: need to handle failure from rebuild command properly?
 """
 
 # NB: if the app cred has limited
+
+MAX_REASON_LENGTH = 1000
 
 import json, socket, os, sys, subprocess, logging, logging.handlers, traceback
 import openstack
@@ -40,7 +46,7 @@ try:
     hostname = socket.gethostname().split('.')[0]
 
     # see why we're being rebooted:
-    sinfo = subprocess.run(['sinfo', '--noheader', '--nodes=%s' % hostname, '-O', 'Reason'], stdout=subprocess.PIPE, universal_newlines=True)
+    sinfo = subprocess.run(['sinfo', '--noheader', '--nodes=%s' % hostname, '-O', 'Reason:%i' % MAX_REASON_LENGTH], stdout=subprocess.PIPE, universal_newlines=True)
     reason = sinfo.stdout.strip()
 
     # find server running this script:
@@ -51,7 +57,9 @@ try:
     logger.info('%s (server id %s): reason=%r', __file__, instance_id, reason)
 
     if reason.startswith("rebuild"):
-        params = dict(param.split(':') for param in reason.split()[1:])
+        params = {'name':hostname, 'admin_password':None}
+        user_params = dict(param.split(':') for param in reason.split()[1:])
+        params.update(user_params)
         logger.info('%s (server id %s): rebuilding %s', __file__, instance_id, params)
         conn.compute.rebuild_server(instance_id, **params)
     else:
