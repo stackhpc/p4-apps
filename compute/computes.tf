@@ -2,9 +2,7 @@ terraform {
   required_version = ">= 0.12, < 0.13"
 }
 
-# https://www.terraform.io/docs/providers/openstack/index.html
-# uses clouds.yml
-provider "openstack" {
+provider "openstack" { # uses clouds.yml
   cloud = local.config.cloud.name
   version = "~> 1.25"
 }
@@ -30,6 +28,26 @@ data "external" "openstack_baremetal" {
     }
 }
 
+data "external" "os_config" {
+  program = ["../tf_scripts/os_config.py"]
+  query = {
+    cloud = local.config.cloud.name
+  }
+}
+
+resource "openstack_identity_application_credential_v3" "compute_cred" {
+
+  name = "${local.config.cluster.name}_${local.config.cluster.compute.name}"
+  description = "allow compute nodes to call openstack server rebuild"
+  access_rules { # requires Train or above
+      path = "/v3/servers/{server_id}/action"
+      method = "POST"
+      service  = "compute"
+  # TODO: consider adding expires_at
+  }
+}
+
+
 resource "openstack_compute_instance_v2" "compute" {
 
   for_each = data.external.openstack_baremetal.result
@@ -53,6 +71,31 @@ resource "openstack_compute_instance_v2" "compute" {
     "terraform directory" = local.tf_dir,
     "cluster" = local.config.cluster.name
   }
+
+  provisioner "file" {
+    content = templatefile("${path.module}/clouds.tpl",
+                            {
+                              "os_config": data.external.os_config.result
+                              "app_cred": openstack_identity_application_credential_v3.compute_cred
+                            },
+                          )
+    destination = "clouds.yaml" # in centos home
+  }
+
+  provisioner "remote-exec" {
+      inline = [
+        "sudo mkdir -p /etc/openstack",
+        "sudo cp clouds.yaml /etc/openstack/",
+      ]
+  }
+
+  connection {
+    type = "ssh"
+    user = local.config.cluster.user
+    private_key = file("~/.ssh/id_rsa") # TODO: should also create this in the cloud if not there
+    host = self.network[0].fixed_ip_v4
+  }
+
 }
 
 # TODO: needs fixing for case where creation partially fails resulting in "compute.network is empty list of object"
