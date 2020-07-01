@@ -20,3 +20,7 @@ vault-password
 
 # If you follow the README, you will create the venv here:
 venv
+
+# TF:
+.terraform
+terraform.tfstate*
