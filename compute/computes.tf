@@ -10,6 +10,7 @@ provider "openstack" { # uses clouds.yml
 locals {
   config = yamldecode(file("../config/deploy.yml"))
   tf_dir = "${data.external.tf_control_hostname.result.hostname}:${path.cwd}"
+  cluster_key_name = replace(slice(split(" ", chomp(file(local.config.cluster.keyfile))),2, 3)[0], "/\\W/", "-") # use key commend with "unsafe" chars replaced
 }
 
 data "external" "tf_control_hostname" {
@@ -35,6 +36,7 @@ data "external" "os_config" {
   }
 }
 
+
 resource "openstack_identity_application_credential_v3" "compute_cred" {
 
   name = "${local.config.cluster.name}_${local.config.cluster.compute.name}"
@@ -55,7 +57,7 @@ resource "openstack_compute_instance_v2" "compute" {
   name = "${local.config.cluster.name}-${local.config.cluster.compute.name}-${each.key}"
   image_name = local.config.cluster.compute.image
   flavor_name = local.config.cluster.compute.flavor
-  key_pair = local.config.cluster.keypair
+  key_pair = local.cluster_key_name
   config_drive = local.config.cluster.compute.config_drive
   availability_zone = "nova::${each.value}" # TODO: availability zone should probably be from config too?s
 
@@ -86,13 +88,15 @@ resource "openstack_compute_instance_v2" "compute" {
       inline = [
         "sudo mkdir -p /etc/openstack",
         "sudo cp clouds.yaml /etc/openstack/",
+        "sudo chmod -R u=r,og= /etc/openstack/",
+        "rm clouds.yaml"
       ]
   }
 
   connection {
     type = "ssh"
     user = local.config.cluster.user
-    private_key = file("~/.ssh/id_rsa") # TODO: should also create this in the cloud if not there
+    private_key = file(local.config.cluster.keyfile)
     host = self.network[0].fixed_ip_v4
   }
 

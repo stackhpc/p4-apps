@@ -18,6 +18,11 @@ locals {
   tf_dir = "${data.external.tf_control_hostname.result.hostname}:${path.cwd}"
 }
 
+resource "openstack_compute_keypair_v2" "cluster_key" {
+  name       = replace(slice(split(" ", chomp(file(local.config.cluster.keyfile))),2, 3)[0], "/\\W/", "-") # use key commend with "unsafe" chars replaced
+  public_key = file(local.config.cluster.keyfile)
+}
+
 resource "openstack_compute_instance_v2" "login" {
 
   count = local.config.cluster.login.num_nodes
@@ -25,7 +30,7 @@ resource "openstack_compute_instance_v2" "login" {
   name = "${local.config.cluster.name}-login-${count.index}"
   image_name = local.config.cluster.login.image
   flavor_name = local.config.cluster.login.flavor
-  key_pair = local.config.cluster.keypair
+  key_pair = openstack_compute_keypair_v2.cluster_key.name
   config_drive = local.config.cluster.login.config_drive
 
   dynamic "network" {
