@@ -3,6 +3,27 @@
 #
 # NB: assumes an access credential has been added to e.g. /etc/openstack - done using terraform here.
 
+- hosts:
+  - cluster_login
+  - cluster_control
+  - cluster_batch
+  - cluster_runtime
+  gather_facts: false
+  become: true
+  tasks:
+    - name: add RebootProgram to slurm.conf
+      lineinfile:
+        path: "{{ openhpc_slurm_conf.location }}"
+        regexp: "^RebootProgram=.*$"
+        line: "RebootProgram={{ alaska_homedir }}/slurm/reboot.py" # TODO: fix name
+      run_once: "{{ openhpc_slurm_conf.shared_fs }}"
+      register: slurm_conf
+    - name: reconfigure slurm
+      shell:
+        cmd: "SLURM_CONF={{ openhpc_slurm_conf.location }} scontrol reconfigure" # TODO: remove env var
+      when: slurm_conf.changed
+      run_once: true
+      
 - hosts: cluster_batch
   gather_facts: false
   become: true
@@ -20,18 +41,8 @@
           - python3-pip
     - name: install openstacksdk
       command: pip3 install openstacksdk # TODO: pin version TODO: use virtualenv TODO: changed_when
-    - name: add RebootProgram to slurm.conf
-      lineinfile:
-        path: "{{ openhpc_slurm_conf.location }}"
-        regexp: "^RebootProgram=.*$"
-        line: "RebootProgram={{ alaska_homedir }}/slurm/reboot.py" # TODO: fix name
-      run_once: "{{ openhpc_slurm_conf.shared_fs }}"
-      register: slurm_conf
-    - name: reconfigure slurm
-      shell:
-        cmd: "SLURM_CONF={{ openhpc_slurm_conf.location }} scontrol reconfigure" # TODO: remove env var
-      when: slurm_conf.changed
-  
+
+
 # for py2:
 # sudo yum install python3
 # sudo yum install python-virtualenv
