@@ -39,12 +39,12 @@ resource "openstack_identity_application_credential_v3" "compute_cred" {
 
   name = "${local.config.cluster.name}_${local.config.cluster.compute.name}"
   description = "allow compute nodes to call openstack server rebuild"
-  access_rules { # requires Train or above
-      path = "/v3/servers/{server_id}/action"
-      method = "POST"
-      service  = "compute"
+  # access_rules { # requires Train or above, didn't work anyway
+  #     path = "/v3/servers/{server_id}/action"
+  #     method = "POST"
+  #     service  = "compute"
   # TODO: consider adding expires_at
-  }
+  #}
 }
 
 
