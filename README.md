@@ -69,6 +69,20 @@ These will generate inventory files in the `inventory/` directory.
         cd <repo root>
         ansible-playbook -i inventory/ --vault-password-file ~/alaska-vault-password -e @config/openhpc.yml -e @config/deploy.yml ansible/cluster.yml
 
+### Rebuilding/rebooting nodes
+
+The cluster supports rebuilding or rebooting nodes via slurm, so that these happen when the node is not runnning a job.
+
+This uses the `scontrol reboot` [command](https://slurm.schedmd.com/scontrol.html). If the `reason` argument is provided and starts with "rebuild" the node will be rebuilt, otherwise it will be rebooted. With "rebuild" the reason may also optionally contain space-separated `name:value` pairs defining rebuild options - see `openstack.compute.rebuild_server` [here](https://docs.openstack.org/openstacksdk/latest/user/proxies/compute.html#modifying-a-server).
+
+For example:
+
+    sudo reboot ASAP reason="rebuild image:7108c39e-5bb0-4bba-acc2-526a1afbe4b4" p4-batch-sv-b16-u10
+
+will drain the specified compute node (i.e. wait for jobs to complete but not start any new ones) then rebuild it it using the specified image.
+
+**NB** if rebuild options are different from state defined in the compute node config (e.g. a different image), rerunning terraform on the compute nodes will cause it to destroy and recreate them to revert to the config-defined state.
+
 # Selected changes from p3-appliances
 Aside from functionality specifically listed above:
 - Only manages OpenHPC cluster.

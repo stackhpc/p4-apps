@@ -38,4 +38,8 @@
 
 # Cluster login setup
 - import_playbook: slurm.yml
+
+# setup slurm-driven reboot
+- import_playbook: os_rebuild.yml
+
 ...
