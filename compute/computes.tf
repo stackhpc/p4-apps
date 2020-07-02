@@ -96,7 +96,7 @@ resource "openstack_compute_instance_v2" "compute" {
   connection {
     type = "ssh"
     user = local.config.cluster.user
-    private_key = file(local.config.cluster.keyfile)
+    private_key = file(trimsuffix(local.config.cluster.keyfile, ".pub"))
     host = self.network[0].fixed_ip_v4
   }
 

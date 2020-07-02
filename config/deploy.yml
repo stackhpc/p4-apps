@@ -5,7 +5,7 @@ cloud:
 
 cluster:
     name: p4
-    keyfile: "~/.ssh/id_rsa.pub"
+    keyfile: "~/.ssh/id_rsa.pub" # NB must have a matching private keyfile w/o .pub extension
     user: centos
     groups: ["login", "compute"] # TODO: change this to a dict
     login:
