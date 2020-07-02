@@ -15,12 +15,12 @@
       lineinfile:
         path: "{{ openhpc_slurm_conf.location }}"
         regexp: "^RebootProgram=.*$"
-        line: "RebootProgram={{ alaska_homedir }}/slurm/reboot.py" # TODO: fix name
+        line: "RebootProgram={{ alaska_homedir }}/slurm/reboot.py" # TODO fix assumptions/name re. shared directory here?
       run_once: "{{ openhpc_slurm_conf.shared_fs }}"
       register: slurm_conf
     - name: reconfigure slurm
       shell:
-        cmd: "SLURM_CONF={{ openhpc_slurm_conf.location }} scontrol reconfigure" # TODO: remove env var
+        cmd: "scontrol reconfigure" # TODO: remove env var
       when: slurm_conf.changed
       run_once: true
 
