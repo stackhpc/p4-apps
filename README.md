@@ -81,7 +81,9 @@ For example:
 
 will drain the specified compute node (i.e. wait for jobs to complete but not start any new ones) then rebuild it it using the specified image.
 
-**NB** if rebuild options are different from state defined in the compute node config (e.g. a different image), rerunning terraform on the compute nodes will cause it to destroy and recreate them to revert to the config-defined state.
+Notes:
+- If rebuild options are different from state defined in the compute node config (e.g. a different image), rerunning terraform on the compute nodes will cause it to destroy and recreate them to revert to the config-defined state.
+- If reboot takes longer than `slurm.conf:SlurmdTimeout`, nodes will get set to DOWN which affects scheduling. However if `slurm.conf:ReturnToService` is 1 or 2 then they will become IDLE again automatically on registering.
 
 # Selected changes from p3-appliances
 Aside from functionality specifically listed above:
