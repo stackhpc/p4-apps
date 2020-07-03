@@ -57,9 +57,9 @@ As part of development these are currently split between:
         cd infra
         terraform apply # uses config/deploy.yml only
 
-3. Create the compute nodes using:
+3. Create baremetal compute nodes using:
 
-        cd ../computes
+        cd ../baremetal-compute
         terraform apply # uses config/deploy.yml only
 
 These will generate inventory files in the `inventory/` directory.
