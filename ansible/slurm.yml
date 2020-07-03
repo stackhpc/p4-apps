@@ -5,12 +5,18 @@
   - cluster_batch
   - cluster_runtime
   become: yes
-  roles:
-    - role: stackhpc.openhpc
-      openhpc_cluster_name: "{{ cluster.name }}"
-      openhpc_slurm_control_host: "{{ groups['cluster_control'] | first }}"
-      openhpc_enable:
-        control: "{{ inventory_hostname in groups['cluster_control'] | default([]) }}"
-        batch: "{{ inventory_hostname in groups['cluster_batch'] | default([]) }}"
-        runtime: "{{ inventory_hostname in groups['cluster_runtime'] | default([]) }}"
+  tasks:
+    - name: Install OpenHPC repository
+      yum:
+        name: "https://github.com/openhpc/ohpc/releases/download/v1.3.GA/ohpc-release-1.3-1.el7.x86_64.rpm"
+        state: present
+    - import_role:
+        name: stackhpc.openhpc
+      vars:
+        openhpc_cluster_name: "{{ cluster.name }}"
+        openhpc_slurm_control_host: "{{ groups['cluster_control'] | first }}"
+        openhpc_enable:
+          control: "{{ inventory_hostname in groups['cluster_control'] | default([]) }}"
+          batch: "{{ inventory_hostname in groups['cluster_batch'] | default([]) }}"
+          runtime: "{{ inventory_hostname in groups['cluster_runtime'] | default([]) }}"
 ...
