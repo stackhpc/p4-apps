@@ -11,23 +11,18 @@
     - name: install python3
       yum:
         name: python3
-    - name: create venv
-      command: python3 -m venv /opt/slurm-tools
-      args:
-        creates: /opt/slurm-tools
     - name: install slurm-openstack-tools
-      shell: |
-        source /opt/slurm-tools/bin/activate
-        pip install --upgrade pip
-        pip install git+https://github.com/stackhpc/slurm-openstack-tools.git
-      args:
-        creates: /opt/slurm-tools/bin/slurm-openstack-rebuild
+      pip:
+        virtualenv: /opt/slurm-tools
+        name: git+https://github.com/stackhpc/slurm-openstack-tools.git
+        virtualenv_python: python3
     - name: add RebootProgram to slurm.conf
       lineinfile:
         path: "{{ openhpc_slurm_conf.location }}"
         regexp: "^RebootProgram=.*$"
         line: "RebootProgram=/opt/slurm-tools/bin/slurm-openstack-rebuild"
       register: slurm_conf
+      run_once: "{{ openhpc_slurm_conf.shared_fs }}"
     - name: reconfigure slurm
       shell:
         cmd: "scontrol reconfigure"
